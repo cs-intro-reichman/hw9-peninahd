@@ -58,8 +58,52 @@ public class MemorySpace {
 	 * @return the base address of the allocated block, or -1 if unable to allocate
 	 */
 	public int malloc(int length) {		
-		//// Replace the following statement with your code
-		return -1;
+		if (freeList == null || freeList.getSize() == 0 || length < 0) {
+			return -1; // No blocks available for allocation		
+		}
+
+		boolean found = false;
+		int acquiredLength = -1;
+		int acquiredAddress = -1;
+
+		//first we are going to iterate over the list and find the memory block
+		//with the closest difference to our length
+		ListIterator iterator = freeList.iterator();
+		int foundIndex = -1;
+		
+		while(iterator.hasNext()) {
+			MemoryBlock currentBlock = iterator.next();
+			
+			if (currentBlock.length >= length) {
+				//foundBlock = currentBlock;
+				acquiredLength = currentBlock.length;
+				acquiredAddress = currentBlock.baseAddress;
+				foundIndex = freeList.indexOf(currentBlock)
+;				found = true;
+				break;
+			}
+		}
+
+		//if we found one, create a new block and allocate it to the allocated list
+		if (found){
+		MemoryBlock allocatedBlock = new MemoryBlock(acquiredAddress, length);
+		allocatedList.addLast(allocatedBlock);
+		} else {
+			return -1;
+		}
+
+		//remove the block if it was exactly the same length or split the block
+		if (acquiredLength == length) {
+			freeList.remove(freeList.getBlock(foundIndex));
+		} else {
+			freeList.getBlock(foundIndex).baseAddress += length;
+			freeList.getBlock(foundIndex).length -= length;
+			//System.out.println("Free List State: " + freeList);
+			//System.out.println("Allocated List State: " + allocatedList);
+
+		}
+
+		return acquiredAddress;
 	}
 
 	/**
@@ -71,7 +115,27 @@ public class MemorySpace {
 	 *            the starting address of the block to freeList
 	 */
 	public void free(int address) {
-		//// Write your code here
+		if(allocatedList.getSize() == 0) {
+			throw new IllegalArgumentException("index must be between 0 and size");
+		}
+		
+		ListIterator iterator = allocatedList.iterator();
+		MemoryBlock freeBlock = null;
+		
+		//finds the block in the allocated list
+		while(iterator.hasNext()) {
+			MemoryBlock currentBlock = iterator.next();
+			if (currentBlock.baseAddress == address) {
+			freeBlock = currentBlock;
+			freeList.addLast(freeBlock);
+			break;
+			}
+		}
+
+		if (freeBlock != null) {
+			allocatedList.remove(freeBlock);
+		}
+	
 	}
 	
 	/**
@@ -88,7 +152,39 @@ public class MemorySpace {
 	 * In this implementation Malloc does not call defrag.
 	 */
 	public void defrag() {
-		/// TODO: Implement defrag test
-		//// Write your code here
+		//when the list is empty or of size 1 throw an error
+		if (freeList.getSize() == 0 || freeList.getSize() == 1){
+			return;
+		}
+		
+		boolean merged; //tracking if we merged an element each time
+
+		do {
+		merged = false; //reset to false
+
+		for (int i = 0; i < freeList.getSize(); i++){
+			for (int j = 0; j < freeList.getSize(); j++) {
+				//skip the current element we are comparing
+				if (j == i) {
+					continue;
+				}
+				//get the sum of the base address and length of the element in the freeList
+				int possibleAddress = freeList.getBlock(i).baseAddress + freeList.getBlock(i).length;
+				
+				//checks each element to see if they can be merged with the current element
+				if (freeList.getBlock(j).baseAddress == possibleAddress) {
+					freeList.getBlock(i).length += freeList.getBlock(j).length;
+					freeList.remove(j);
+					j--;
+					merged = true;
+					break;
+				}
+			}
+			if (merged) {
+				break;
+			}
+		}
+
+		} while (merged);
 	}
 }
