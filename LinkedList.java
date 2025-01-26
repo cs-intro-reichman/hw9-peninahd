@@ -54,8 +54,11 @@ public class LinkedList {
 			throw new IllegalArgumentException(
 					"index must be between 0 and size");
 		}
-		//// Replace the following statement with your code
-		return null;
+		Node current = first;
+		for (int i = 0; i < index; i++){
+			current = current.next;
+		}
+		return current;
 	}
 	
 	/**
@@ -78,7 +81,30 @@ public class LinkedList {
 	 *         if index is negative or greater than the list's size
 	 */
 	public void add(int index, MemoryBlock block) {
-		//// Write your code here
+		if (index < 0 || index > size) {
+			throw new IllegalArgumentException("Index out of bounds");
+		}
+		
+		Node newNode = new Node(block);
+		//inserting the node as the first node if the index is 0
+		if (index == 0) {
+			newNode.next = first;
+			first = newNode;
+			if (size == 0) {
+				last = newNode;
+			}
+		} else if (index ==  size){
+			last.next = newNode;
+			last = newNode;
+		} else {
+			Node current = first;
+			for (int i = 0; i < index - 1; i++){
+				current = current.next;
+			}
+			newNode.next = current.next;
+			current.next = newNode;
+		}
+		size++;
 	}
 
 	/**
@@ -89,7 +115,7 @@ public class LinkedList {
 	 *        the given memory block
 	 */
 	public void addLast(MemoryBlock block) {
-		//// Write your code here
+		add(size, block);
 	}
 	
 	/**
@@ -100,7 +126,7 @@ public class LinkedList {
 	 *        the given memory block
 	 */
 	public void addFirst(MemoryBlock block) {
-		//// Write your code here
+		add(0, block);
 	}
 
 	/**
@@ -113,8 +139,11 @@ public class LinkedList {
 	 *         if index is negative or greater than or equal to size
 	 */
 	public MemoryBlock getBlock(int index) {
-		//// Replace the following statement with your code
-		return null;
+	if (index < 0 || index > size || size == 0) {
+		throw new IllegalArgumentException("index must be between 0 and size");
+	}
+		Node node = getNode(index);
+		return node.block;
 	}	
 
 	/**
@@ -125,7 +154,14 @@ public class LinkedList {
 	 * @return the index of the block, or -1 if the block is not in this list
 	 */
 	public int indexOf(MemoryBlock block) {
-		//// Replace the following statement with your code
+		Node current = first;
+		for (int i = 0; i < size; i++){
+			MemoryBlock currentBlock = current.block;
+			if (currentBlock.equals(block)){
+				return i;
+			}
+			current = current.next;
+		}
 		return -1;
 	}
 
@@ -136,7 +172,27 @@ public class LinkedList {
 	 *        the node that will be removed from this list
 	 */
 	public void remove(Node node) {
-		//// Write your code here
+		int indexNode = indexOf(node.block);
+		if (indexNode < 0 || indexNode > size){
+			throw new IllegalArgumentException("index must be between 0 and size");
+		}
+		if (indexNode == 0){
+			first = first.next;
+			if (size == 1) {
+				last = null;
+			}
+		} else {
+			Node current = first;
+			for (int i = 0; i < indexNode - 1; i++){
+				current = current.next;
+			}
+			//if the node being removed is the last one
+			if (current.next == last) {
+				last = current;
+			}
+			current.next = current.next.next;
+		}
+		size--;
 	}
 
 	/**
@@ -147,7 +203,12 @@ public class LinkedList {
 	 *         if index is negative or greater than or equal to size
 	 */
 	public void remove(int index) {
-		//// Write your code here
+		if (index < 0 || index > size){
+			throw new IllegalArgumentException("index must be between 0 and size");
+		}
+
+		Node node = getNode(index);
+		remove(node);
 	}
 
 	/**
@@ -158,7 +219,11 @@ public class LinkedList {
 	 *         if the given memory block is not in this list
 	 */
 	public void remove(MemoryBlock block) {
-		//// Write your code here
+		int index = indexOf(block);
+		if (index < 0) {
+			throw new IllegalArgumentException("index must be between 0 and size");
+		}
+		remove(index);
 	}	
 
 	/**
@@ -172,7 +237,16 @@ public class LinkedList {
 	 * A textual representation of this list, for debugging.
 	 */
 	public String toString() {
-		//// Replace the following statement with your code
-		return "";
+		StringBuilder sb = new StringBuilder();
+		Node current = first;
+
+		while (current != null) {
+			sb.append(current.block + " ");
+			//if (current.next != null) {
+				//sb.append(" "); //put a space between each node
+			//}
+			current = current.next;
+		}
+		return sb.toString();
 	}
 }
